@@ -41,3 +41,4 @@ next-env.d.ts
 /contracts/out
 /contracts/broadcast
 /contracts/lib
+.prompt.json
