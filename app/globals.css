@@ -1,7 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-body {
-  @apply bg-base-dark text-white;
+@theme {
+  --color-base-blue: #0052FF;
+  --color-base-dark: #0D1117;
 }
