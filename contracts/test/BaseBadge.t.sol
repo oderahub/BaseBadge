@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 import "../src/BaseBadge.sol";
@@ -11,6 +11,9 @@ contract BaseBadgeTest is Test {
 
     function setUp() public {
         badge = new BaseBadge();
+        // Start tests at a reasonable timestamp (not day 0)
+        // This prevents issues with the daily minting logic
+        vm.warp(100 days);
     }
 
     function testMintDailyBadge() public {
@@ -40,20 +43,24 @@ contract BaseBadgeTest is Test {
     }
 
     function testBadgeMintedEvent() public {
+        uint256 expectedDay = block.timestamp / 1 days;
+        string memory answer = "test answer";
+        bytes32 expectedHash = keccak256(abi.encodePacked(answer, user, expectedDay));
+
         vm.prank(user);
-        vm.expectEmit(true, false, false, false);
-        emit BaseBadge.BadgeMinted(user, block.timestamp / 1 days, bytes32(0));
-        badge.mintDailyBadge("test answer");
+        vm.expectEmit(true, false, false, true);
+        emit BaseBadge.BadgeMinted(user, expectedDay, expectedHash);
+        badge.mintDailyBadge(answer);
     }
 
-    function testOnchainMetadataGeneration() public {
+    function testOnchainMetadataGeneration() public view {
         string memory metadata = badge.uri(badge.DAILY_BADGE());
         // Check that metadata starts with data URI
         assertTrue(bytes(metadata).length > 0);
         // Metadata should start with "data:application/json;base64,"
     }
 
-    function testUniqueMetadataPerTokenId() public {
+    function testUniqueMetadataPerTokenId() public view {
         string memory uri1 = badge.uri(1);
         string memory uri2 = badge.uri(2);
         // Different token IDs should generate different metadata
